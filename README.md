@@ -1,0 +1,2 @@
+# ANMBOT
+Generatore QR Code
