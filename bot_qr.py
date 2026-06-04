@@ -5,17 +5,28 @@ import qrcode
 from PIL import Image
 from io import BytesIO
 
-TOKEN = "8239347929:AAEGr4xywdLShOGiAywcwJlCiODGExZ7nQ0"   # ← CAMBIA DOPO con il tuo token!
+TOKEN = "8239347929:AAEGr4xywdLShOGiAywcwJlCiODGExZ7nQ0"   # ← Cambia con il tuo token
 
 bot = telebot.TeleBot(TOKEN)
 
 dati_fissi = [
-    "7_GIORNI", "ANM", "2026-02-22T17:42", "2026-02-28T23:59",
-    "E3GGJ2BYZE", "15", "2", "4",
-    "050e9ecf31070627ed6a06783002899a3059e5749040e7f77aeb18f80c"
+    "MENSILE",
+    "ANM",
+    "2026-06-02T11:40",
+    "2026-06-30T23:59",
+    "MGZET9AUBP",
+    "11",
+    "2",
+    "4",
+    "05c36d9fce339ec6dc8711e828433a27bd3ff535a49b2abe7f6a02927f"
 ]
 
-variants = {"0.5cm": 59, "1cm": 118, "1.5cm": 177, "2cm": 236, "2.5cm": 295}
+variants = {
+    "0.5cm": 59,
+    "1cm": 118,
+    "1.5cm": 177,
+    "2cm": 236
+}
 
 @bot.message_handler(commands=['start'])
 def start(message):
@@ -30,6 +41,10 @@ def start(message):
 @bot.callback_query_handler(func=lambda call: True)
 def button_click(call):
     size = call.data
+    genera_qr_code(call.message.chat.id, size)
+    bot.answer_callback_query(call.id)
+
+def genera_qr_code(chat_id, size):
     pixels = variants[size]
 
     tz = pytz.timezone('Europe/Rome')
@@ -38,7 +53,7 @@ def button_click(call):
     dati = dati_fissi + [timestamp]
     testo = "\n".join(dati)
 
-    qr = qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_H, box_size=12, border=1)
+    qr = qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_H, box_size=16, border=1)
     qr.add_data(testo)
     qr.make(fit=True)
 
@@ -49,8 +64,7 @@ def button_click(call):
     img.save(bio, 'PNG')
     bio.seek(0)
 
-    bot.send_photo(call.message.chat.id, bio, 
-                   caption=f"✅ QR {size} generato\n⏰ {timestamp}")
+    bot.send_photo(chat_id, bio, caption=f"✅ QR {size} generato\n⏰ {timestamp}")
 
-print("Bot avviato...")
+print("🤖 Bot aggiornato avviato...")
 bot.infinity_polling()
